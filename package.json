@@ -1,0 +1,15 @@
+{
+  "name": "delivery-app",
+  "version": "1.0.0",
+  "description": "Delivey request through online and live tracking.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"cd client && npm run dev\" \"cd server && npm run dev\"",
+    "start": "cd client && npm run build && cd ../server && npm start"
+  },
+  "author": "mak",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
