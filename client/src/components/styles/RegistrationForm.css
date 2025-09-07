@@ -9,7 +9,6 @@
   display: flex;
   flex: 1;
   margin-bottom: 16px;
-  width: 50%;
 }
 
 .input-grid {
@@ -22,6 +21,14 @@
 .form {
   margin-top: 24px;
   width: 100%;
+}
+
+.page-header {
+  padding: 8px 0 4px 0;
+}
+
+.page-header h1 {
+  margin: 0 0 4px 0;
 }
 
 .fieldset {
@@ -60,6 +67,16 @@
   margin-top: 16px;
   margin-bottom: 8px;
 }
+.success-alert {
+  margin-top: 12px;
+}
+
+.form-footer {
+  position: sticky;
+  bottom: 8px;
+  background: transparent;
+  padding-top: 12px;
+}
 @media screen and (max-width: 600px) {
   .input-grid {
     grid-template-columns: 1fr;
@@ -70,6 +87,10 @@
   }
   .column {
     width: 100%;
-  } 
-    
+  }
+  .form-footer {
+    flex-direction: column-reverse;
+    gap: 8px;
+    align-items: stretch;
+  }
 }

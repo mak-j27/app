@@ -5,6 +5,12 @@ import LoadingSpinner from "./components/LoadingSpinner";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Login from "./components/Login";
 import RegistrationForm from "./components/RegistrationForm";
+import EnvBadge from "./components/EnvBadge";
+import ForgotPassword from "./components/ForgotPassword";
+import ResetPassword from "./components/ResetPassword";
+import ResetPasswordModal from "./components/ResetPasswordModal";
+import SiteHeader from "./components/SiteHeader";
+import SiteFooter from "./components/SiteFooter";
 import "./App.css";
 
 // Protected Route Component
@@ -43,9 +49,21 @@ const AdminDashboard = React.lazy(() => import("./components/AdminDashboard"));
 function App() {
   return (
     <ErrorBoundary>
+      <SiteHeader />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<RegistrationForm />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route
+          path="/reset-password/modal"
+          element={
+            <ResetPasswordModal
+              open={true}
+              onClose={() => window.history.back()}
+            />
+          }
+        />
 
         {/* Protected Routes */}
         <Route
@@ -79,6 +97,7 @@ function App() {
         {/* Redirect root to login */}
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
+      <SiteFooter />
     </ErrorBoundary>
   );
 }

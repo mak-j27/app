@@ -1,20 +1,42 @@
-import React from 'react';
-import { AppBar, Toolbar, Typography, Tabs, Tab, Button, Box, Container } from '@mui/material';
-import PropTypes from 'prop-types';
+import React from "react";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Tabs,
+  Tab,
+  Button,
+  Box,
+  Container,
+} from "@mui/material";
+import PropTypes from "prop-types";
 
-const DashboardLayout = ({ user, tab, onTabChange, children, onLogout, titlePrefix, extraTabs = [], fullWidthChildren = false }) => {
+const DashboardLayout = ({
+  user,
+  tab,
+  onTabChange,
+  children,
+  onLogout,
+  titlePrefix,
+  extraTabs = [],
+  fullWidthChildren = false,
+}) => {
   return (
     <>
       <AppBar
         position="fixed"
         sx={{
-          bgcolor: 'primary.main',
-          color: 'common.white',
+          bgcolor: "primary.main",
+          color: "common.white",
           boxShadow: 3,
         }}
       >
-        <Toolbar sx={{ alignItems: 'center', minHeight: 64 }}>
-          <Typography variant="h6" sx={{ mr: 3, fontWeight: 600 }} color="inherit">
+        <Toolbar sx={{ alignItems: "center", minHeight: 64 }}>
+          <Typography
+            variant="h6"
+            sx={{ mr: 3, fontWeight: 600 }}
+            color="inherit"
+          >
             {titlePrefix} {user?.firstName}
           </Typography>
 
@@ -23,7 +45,7 @@ const DashboardLayout = ({ user, tab, onTabChange, children, onLogout, titlePref
             onChange={onTabChange}
             textColor="inherit"
             indicatorColor="secondary"
-            sx={{ '& .MuiTab-root': { color: 'common.white' } }}
+            sx={{ "& .MuiTab-root": { color: "common.white" } }}
           >
             <Tab label="Home" />
             <Tab label="Profile" />
@@ -34,7 +56,11 @@ const DashboardLayout = ({ user, tab, onTabChange, children, onLogout, titlePref
 
           <Box sx={{ flexGrow: 1 }} />
 
-          <Button color="inherit" onClick={onLogout} sx={{ textTransform: 'none' }}>
+          <Button
+            color="inherit"
+            onClick={onLogout}
+            sx={{ textTransform: "none" }}
+          >
             Logout
           </Button>
         </Toolbar>
@@ -44,24 +70,14 @@ const DashboardLayout = ({ user, tab, onTabChange, children, onLogout, titlePref
       <Toolbar />
 
       {fullWidthChildren ? (
-        <Box sx={{ width: '100%', mt: 2 }}>{children}</Box>
+        <Box sx={{ width: "100%", mt: 2 }}>{children}</Box>
       ) : (
         <Container maxWidth="lg">
           <Box sx={{ mt: 2 }}>{children}</Box>
         </Container>
       )}
-      
-      {/* Footer */}
-      <Box component="footer" sx={{ mt: 4, py: 2, bgcolor: 'background.paper', borderTop: 1, borderColor: 'divider' }}>
-        <Container maxWidth="lg">
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Box sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>© {new Date().getFullYear()} Your Company</Box>
-            <Box>
-              <a href="/terms" style={{ color: 'inherit', textDecoration: 'none', marginLeft: 12 }}>Terms &amp; Conditions</a>
-            </Box>
-          </Box>
-        </Container>
-      </Box>
+
+  {/* Footer removed - using global SiteFooter for consistency */}
     </>
   );
 };
@@ -72,11 +88,11 @@ DashboardLayout.propTypes = {
   onTabChange: PropTypes.func.isRequired,
   children: PropTypes.node,
   onLogout: PropTypes.func.isRequired,
-  titlePrefix: PropTypes.string
+  titlePrefix: PropTypes.string,
 };
 
 DashboardLayout.defaultProps = {
-  titlePrefix: 'Welcome,'
+  titlePrefix: "Welcome,",
 };
 
 DashboardLayout.propTypes.extraTabs = PropTypes.array;

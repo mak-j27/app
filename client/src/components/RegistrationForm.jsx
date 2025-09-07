@@ -7,6 +7,7 @@ import {
   Button,
   Container,
   TextField,
+  LinearProgress,
   Typography,
   Grid,
   Alert,
@@ -19,6 +20,7 @@ import {
   DialogContentText,
   DialogActions,
 } from "@mui/material";
+import { getPasswordStrength } from '../utils/passwordUtils';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/index.js";
 
@@ -155,19 +157,32 @@ const RegistrationForm = () => {
     },
   });
 
+  const pwStrength = getPasswordStrength(formik.values.password);
+  const strengthPercent = pwStrength.percent;
+  const strengthLabel = pwStrength.label;
+  const strengthColor = pwStrength.color;
+  const entropy = pwStrength.entropy;
+
   return (
-    <Container component="main" maxWidth="sm">
+    <Container component="main" maxWidth="md">
       <Box className="container">
-        <Typography component="h1" variant="h5">
-          Register {formik.isValid ? "Valid" : "Invalid"}
-        </Typography>
-        <Box component="form" onSubmit={formik.handleSubmit} className="form">
+        {/* Header */}
+        <Box className="page-header" sx={{ mb: 2 }}>
+          <Typography component="h1" variant="h5" sx={{ fontWeight: 600 }}>
+            Create your account
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Quick and secure registration — fill the details below to get started.
+          </Typography>
+        </Box>
+
+        <Box component="form" onSubmit={formik.handleSubmit} className="form" noValidate>
           <Grid container spacing={2} className="contaier">
-            <Grid xs={12} width={"100%"}>
+            <Grid item xs={12}>
               <fieldset className="fieldset">
                 <legend className="legend">Personal Details</legend>
                 <Grid container spacing={2}>
-                  <Grid item xs={6} className="column">
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       id="firstName"
@@ -184,7 +199,7 @@ const RegistrationForm = () => {
                       }
                     />
                   </Grid>
-                  <Grid item xs={6} className="column">
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       id="lastName"
@@ -203,7 +218,7 @@ const RegistrationForm = () => {
                   </Grid>
                 </Grid>
                 <Grid container spacing={2}>
-                  <Grid item xs={6} className="column">
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       id="email"
@@ -217,7 +232,7 @@ const RegistrationForm = () => {
                       helperText={formik.touched.email && formik.errors.email}
                     />
                   </Grid>
-                  <Grid item xs={6} className="column">
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       id="phone"
@@ -234,11 +249,11 @@ const RegistrationForm = () => {
                 </Grid>
               </fieldset>
             </Grid>
-            <Grid xs={12} width={"100%"}>
+    <Grid item xs={12}>
               <fieldset className="fieldset">
                 <legend className="legend">Security Details</legend>
                 <Grid container spacing={2}>
-                  <Grid item xs={6} className="column">
+      <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       id="password"
@@ -255,8 +270,24 @@ const RegistrationForm = () => {
                         formik.touched.password && formik.errors.password
                       }
                     />
+                    {/* Password strength */}
+                    <Box sx={{ mt: 1 }}>
+                      <LinearProgress variant="determinate" value={strengthPercent} sx={{ height: 8, borderRadius: 2, backgroundColor: '#e6e6e6', '& .MuiLinearProgress-bar': { backgroundColor: strengthColor } }} />
+                      <Typography variant="caption" sx={{ color: strengthColor, display: 'block', mt: 0.5 }}>{strengthLabel} — {pwStrength.entropy} bits</Typography>
+                      {/* zxcvbn feedback */}
+                      {pwStrength.feedback && (
+                        <Box sx={{ mt: 1 }}>
+                          {pwStrength.feedback.warning && (
+                            <Typography variant="caption" sx={{ color: 'warning.main', display: 'block' }}>{pwStrength.feedback.warning}</Typography>
+                          )}
+                          {pwStrength.feedback.suggestions && pwStrength.feedback.suggestions.map((sug, idx) => (
+                            <Typography key={idx} variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>• {sug}</Typography>
+                          ))}
+                        </Box>
+                      )}
+                    </Box>
                   </Grid>
-                  <Grid item xs={6} className="column">
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       id="confirmPassword"
@@ -278,12 +309,12 @@ const RegistrationForm = () => {
                 </Grid>
               </fieldset>
             </Grid>
-            <Grid xs={12} width={"100%"}>
+    <Grid item xs={12}>
               <fieldset className="fieldset">
                 <legend className="legend">Address Details</legend>
                 <Grid container spacing={2}>
                   {/* First Row */}
-                  <Grid item xs={6}>
+      <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       id="doorNo"
@@ -297,7 +328,7 @@ const RegistrationForm = () => {
                       helperText={formik.touched.doorNo && formik.errors.doorNo}
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       id="street"
@@ -312,7 +343,7 @@ const RegistrationForm = () => {
                     />
                   </Grid>
                   {/* Second Row */}
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       id="area"
@@ -325,7 +356,7 @@ const RegistrationForm = () => {
                     />
                   </Grid>
 
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       id="city"
@@ -337,7 +368,7 @@ const RegistrationForm = () => {
                       helperText={formik.touched.city && formik.errors.city}
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       id="state"
@@ -371,7 +402,7 @@ const RegistrationForm = () => {
               </fieldset>
             </Grid>
             <Grid container spacing={2} className="">
-              <Grid item xs={6} className="column">
+              <Grid item xs={12}>
                 <Box>
                   <FormControlLabel
                     control={
@@ -391,34 +422,36 @@ const RegistrationForm = () => {
                   )}
                 </Box>
               </Grid>
-              <Grid item xs={6} className="column">
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  className="submit-button"
-                  disabled={isSubmitting || !formik.isValid}
-                >
-                  {isSubmitting ? <CircularProgress size={24} /> : "Register"}
-                </Button>
-              </Grid>
             </Grid>
           </Grid>
+          {/* Feedback */}
           {error && (
-            <Alert severity="error" className="error-alert">
+            <Alert severity="error" className="error-alert" sx={{ mt: 2 }}>
               {error}
             </Alert>
           )}
           {success && (
-            <Alert severity="success" className="success-alert">
+            <Alert severity="success" className="success-alert" sx={{ mt: 2 }}>
               {success}
             </Alert>
           )}
 
-          <Box sx={{ textAlign: "center" }}>
-            <Button onClick={() => navigate("/login")} className="link-button">
-              Already have an account? Sign in here
+          {/* Footer actions: Cancel + Register (sticky feel) */}
+          <Box className="form-footer" sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'space-between', alignItems: 'center' }}>
+            <Button variant="text" onClick={() => navigate('/login')} className="link-button">
+              Already have an account? Sign in
             </Button>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Button variant="outlined" onClick={() => navigate(-1)} disabled={isSubmitting}>Cancel</Button>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={isSubmitting || !formik.isValid}
+                startIcon={isSubmitting ? <CircularProgress size={18} /> : null}
+              >
+                {isSubmitting ? 'Registering...' : 'Register'}
+              </Button>
+            </Box>
           </Box>
         </Box>
       </Box>

@@ -6,9 +6,16 @@ import {
   TextField,
   Typography,
   Alert,
+  Dialog,
+  DialogContent,
 } from '@mui/material';
 import { useAuth } from '../context/index.js';
 import { useNavigate } from 'react-router-dom';
+import ForgotPassword from './ForgotPassword';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogActions from '@mui/material/DialogActions';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -18,6 +25,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [forgotOpen, setForgotOpen] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -99,6 +107,14 @@ const Login = () => {
             value={formData.password}
             onChange={handleChange}
           />
+          <Box sx={{ textAlign: 'right', mt: 1 }}>
+            <Button
+              onClick={() => setForgotOpen(true)}
+              sx={{ textTransform: 'none', fontSize: '0.9rem' }}
+            >
+              Forgot password?
+            </Button>
+          </Box>
           <Button
             type="submit"
             fullWidth
@@ -117,6 +133,19 @@ const Login = () => {
           </Box>
         </Box>
       </Box>
+  <Dialog className="dialog-animated" open={forgotOpen} onClose={() => setForgotOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle className="modal-header" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>Forgot password</span>
+          <IconButton size="small" onClick={() => setForgotOpen(false)}><CloseIcon /></IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <ForgotPassword formId="forgot-form" onClose={() => setForgotOpen(false)} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setForgotOpen(false)}>Cancel</Button>
+          <Button type="submit" form="forgot-form" variant="contained">Send</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

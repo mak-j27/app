@@ -1,7 +1,6 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
 }
 
@@ -40,3 +39,109 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Env badge is inline-styled; add a small fallback class if needed */
+.env-badge {
+  position: fixed;
+  right: 12px;
+  top: 12px;
+  z-index: 9999;
+}
+
+/* Modal content styling */
+.modal-content {
+  max-width: 480px;
+  margin: 0.25rem 0;
+  padding: 8px 0;
+}
+
+.modal-title {
+  margin-top: 0;
+  font-size: 1.25rem;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modal-input {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db; /* gray-300 */
+  outline: none;
+}
+
+.modal-footer { 
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Fade + slide animation for dialogs */
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.dialog-animated .MuiPaper-root {
+  animation: fadeSlideIn 220ms ease-out;
+}
+
+/* Modal header styling */
+.modal-header {
+  background: linear-gradient(90deg, #6366f1 0%, #06b6d4 100%); /* indigo to teal */
+  color: white;
+  padding: 12px 16px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+/* Global site header/footer */
+.site-footer {
+  background: transparent;
+}
+
+.site-header-logo {
+  font-weight: 700;
+}
+
+/* Full-bleed header/footer backgrounds */
+.site-header-outer {
+  width: 100%;
+  left: 0;
+  right: 0;
+}
+.site-header .MuiToolbar-root {
+  padding-left: 0;
+  padding-right: 0;
+}
+.site-footer-outer {
+  width: 100%;
+  left: 0;
+  right: 0;
+  background: transparent;
+}
+.site-footer {
+  width: 100%;
+}
+
+/* Full width page helper */
+.full-width-page {
+  width: 100%;
+  margin: 0 auto;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.full-width-page .modal-content {
+  width: 100%;
+  margin: 0.5rem 0;
+}
+
+.full-width-page .modal-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+
