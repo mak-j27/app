@@ -116,28 +116,29 @@ const RegistrationForm = () => {
           },
         };
 
-  const response = await register(registerData);
+        const response = await register(registerData);
 
         if (response && (response.success || response.data)) {
           setError(""); // Clear any existing errors
           setSuccess(response.message || "Registration successful!");
           setOpenDialog(true); // Show the success dialog
           // Auto-redirect after a short delay to the appropriate dashboard
-          const role = response.data?.role || response.role || registerData.role;
+          const role =
+            response.data?.role || response.role || registerData.role;
           setTimeout(() => {
             setOpenDialog(false);
             switch (role) {
-              case 'customer':
-                navigate('/customer/dashboard');
+              case "customer":
+                navigate("/customer/dashboard");
                 break;
-              case 'agent':
-                navigate('/agent/dashboard');
+              case "agent":
+                navigate("/agent/dashboard");
                 break;
-              case 'admin':
-                navigate('/admin/dashboard');
+              case "admin":
+                navigate("/admin/dashboard");
                 break;
               default:
-                navigate('/login');
+                navigate("/login");
             }
           }, 1800); // 1.8s so user sees dialog briefly
         } else {
@@ -156,20 +157,28 @@ const RegistrationForm = () => {
   });
 
   return (
-    <Container component="main" maxWidth="sm">
+    <Container component="main">
       <Box className="container">
         <Typography component="h1" variant="h5">
-          Register {formik.isValid ? "Valid" : "Invalid"}
+          Register
         </Typography>
         <Box component="form" onSubmit={formik.handleSubmit} className="form">
-          <Grid container spacing={2} className="contaier">
-            <Grid xs={12} width={"100%"}>
-              <Box className="section" sx={{ mb: 2, p: 2, borderRadius: 1, bgcolor: 'background.paper' }}>
-                <Typography variant="h6" component="h2" sx={{ mb: 1 }}>Personal details</Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={6} className="column">
+          <Grid container sx={{ flexDirection: "column" }}>
+            <Grid xs={12}>
+              <Box
+                sx={{
+                  mb: 2,
+                  borderRadius: 1,
+                  textAlign: "left",
+                  bgcolor: "background.paper",
+                }}
+              >
+                <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
+                  Personal details
+                </Typography>
+                <Grid container spacing={2} sx={{ mb: 2 }}>
+                  <Grid item xs={12}>
                     <TextField
-                      fullWidth
                       id="firstName"
                       name="firstName"
                       label="First Name"
@@ -184,9 +193,8 @@ const RegistrationForm = () => {
                       }
                     />
                   </Grid>
-                  <Grid item xs={6} className="column">
+                  <Grid item xs={12} sm={6}>
                     <TextField
-                      fullWidth
                       id="lastName"
                       name="lastName"
                       label="Last Name"
@@ -203,9 +211,8 @@ const RegistrationForm = () => {
                   </Grid>
                 </Grid>
                 <Grid container spacing={2}>
-                  <Grid item xs={6} className="column">
+                  <Grid item xs={12} sm={6}>
                     <TextField
-                      fullWidth
                       id="email"
                       name="email"
                       label="Email Address"
@@ -217,9 +224,8 @@ const RegistrationForm = () => {
                       helperText={formik.touched.email && formik.errors.email}
                     />
                   </Grid>
-                  <Grid item xs={6} className="column">
+                  <Grid item xs={12} sm={6}>
                     <TextField
-                      fullWidth
                       id="phone"
                       name="phone"
                       label="Phone Number"
@@ -234,13 +240,21 @@ const RegistrationForm = () => {
                 </Grid>
               </Box>
             </Grid>
-            <Grid xs={12} width={"100%"}>
-              <Box className="section" sx={{ mb: 2, p: 2, borderRadius: 1, bgcolor: 'background.paper' }}>
-                <Typography variant="h6" component="h2" sx={{ mb: 1 }}>Security</Typography>
+            <Grid xs={12}>
+              <Box
+                sx={{
+                  mb: 2,
+                  borderRadius: 1,
+                  textAlign: "left",
+                  bgcolor: "background.paper",
+                }}
+              >
+                <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
+                  Security
+                </Typography>
                 <Grid container spacing={2}>
-                  <Grid item xs={6} className="column">
+                  <Grid item xs={12} sm={6}>
                     <TextField
-                      fullWidth
                       id="password"
                       name="password"
                       label="Password"
@@ -256,9 +270,8 @@ const RegistrationForm = () => {
                       }
                     />
                   </Grid>
-                  <Grid item xs={6} className="column">
+                  <Grid item xs={12} sm={6}>
                     <TextField
-                      fullWidth
                       id="confirmPassword"
                       name="confirmPassword"
                       label="Confirm Password"
@@ -278,14 +291,22 @@ const RegistrationForm = () => {
                 </Grid>
               </Box>
             </Grid>
-            <Grid xs={12} width={"100%"}>
-              <Box className="section" sx={{ mb: 2, p: 2, borderRadius: 1, bgcolor: 'background.paper' }}>
-                <Typography variant="h6" component="h2" sx={{ mb: 1 }}>Address</Typography>
-                <Grid container spacing={2}>
+            <Grid xs={12}>
+              <Box
+                sx={{
+                  mb: 2,
+                  borderRadius: 1,
+                  textAlign: "left",
+                  bgcolor: "background.paper",
+                }}
+              >
+                <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
+                  Address
+                </Typography>
+                <Grid container spacing={2} sx={{ mb: 2 }}>
                   {/* First Row */}
-                  <Grid item xs={6}>
+                  <Grid item xs={4}>
                     <TextField
-                      fullWidth
                       id="doorNo"
                       name="doorNo"
                       label="Door/Flat No."
@@ -297,9 +318,8 @@ const RegistrationForm = () => {
                       helperText={formik.touched.doorNo && formik.errors.doorNo}
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={8}>
                     <TextField
-                      fullWidth
                       id="street"
                       name="street"
                       label="Street"
@@ -311,10 +331,11 @@ const RegistrationForm = () => {
                       helperText={formik.touched.street && formik.errors.street}
                     />
                   </Grid>
+                </Grid>
+                <Grid container spacing={2} sx={{ mb: 2 }}>
                   {/* Second Row */}
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
-                      fullWidth
                       id="area"
                       name="area"
                       label="Area"
@@ -324,10 +345,8 @@ const RegistrationForm = () => {
                       helperText={formik.touched.area && formik.errors.area}
                     />
                   </Grid>
-
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
-                      fullWidth
                       id="city"
                       name="city"
                       label="City"
@@ -337,9 +356,10 @@ const RegistrationForm = () => {
                       helperText={formik.touched.city && formik.errors.city}
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                </Grid>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
-                      fullWidth
                       id="state"
                       name="state"
                       label="State"
@@ -351,9 +371,8 @@ const RegistrationForm = () => {
                       helperText={formik.touched.state && formik.errors.state}
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
-                      fullWidth
                       id="pincode"
                       name="pincode"
                       label="Pincode"
@@ -370,8 +389,8 @@ const RegistrationForm = () => {
                 </Grid>
               </Box>
             </Grid>
-            <Grid container spacing={2} className="">
-              <Grid item xs={6} className="column">
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
                 <Box>
                   <FormControlLabel
                     control={
@@ -391,10 +410,9 @@ const RegistrationForm = () => {
                   )}
                 </Box>
               </Grid>
-              <Grid item xs={6} className="column">
+              <Grid item xs={12} sm={6}>
                 <Button
                   type="submit"
-                  fullWidth
                   variant="contained"
                   className="submit-button"
                   disabled={isSubmitting || !formik.isValid}
@@ -432,65 +450,74 @@ const RegistrationForm = () => {
         PaperProps={{
           sx: {
             borderRadius: 2,
-            minWidth: '400px',
-            overflow: 'hidden'
-          }
+            minWidth: "400px",
+            overflow: "hidden",
+          },
         }}
         TransitionProps={{
-          timeout: 500
+          timeout: 500,
         }}
       >
-        <DialogTitle 
-          id="success-dialog-title" 
-          sx={{ 
-            bgcolor: 'primary.main', 
-            color: 'white',
+        <DialogTitle
+          id="success-dialog-title"
+          sx={{
+            bgcolor: "primary.main",
+            color: "white",
             py: 2,
-            textAlign: 'center'
+            textAlign: "center",
           }}
         >
-          <Typography variant="h5" component="span" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+          <Typography
+            variant="h5"
+            component="span"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 1,
+            }}
+          >
             🎉 Registration Successful!
           </Typography>
         </DialogTitle>
         <DialogContent sx={{ mt: 2, px: 4, py: 3 }}>
-          <DialogContentText 
+          <DialogContentText
             id="success-dialog-description"
             sx={{
-              textAlign: 'center',
+              textAlign: "center",
               mb: 2,
-              color: 'text.primary'
+              color: "text.primary",
             }}
           >
             {success || "Your account has been created successfully!"}
           </DialogContentText>
           <DialogContentText
             sx={{
-              textAlign: 'center',
-              color: 'text.secondary',
-              fontSize: '0.9rem'
+              textAlign: "center",
+              color: "text.secondary",
+              fontSize: "0.9rem",
             }}
           >
             Would you like to proceed to login with your new account?
           </DialogContentText>
         </DialogContent>
-        <DialogActions 
-          sx={{ 
-            px: 4, 
+        <DialogActions
+          sx={{
+            px: 4,
             pb: 3,
-            display: 'flex',
-            justifyContent: 'center',
-            gap: 2
+            display: "flex",
+            justifyContent: "center",
+            gap: 2,
           }}
         >
-          <Button 
-            onClick={() => setOpenDialog(false)} 
-            color="primary" 
+          <Button
+            onClick={() => setOpenDialog(false)}
+            color="primary"
             variant="outlined"
             sx={{
               px: 3,
               py: 1,
-              borderRadius: 2
+              borderRadius: 2,
             }}
           >
             Stay Here
@@ -503,7 +530,7 @@ const RegistrationForm = () => {
             sx={{
               px: 3,
               py: 1,
-              borderRadius: 2
+              borderRadius: 2,
             }}
           >
             Proceed to Login
