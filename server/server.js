@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 // Use configurable salt rounds; increase in production for better security
 const BCRYPT_SALT_ROUNDS = parseInt(process.env.BCRYPT_SALT_ROUNDS) || 12;
 const rateLimit = require('express-rate-limit');
+const crypto = require('crypto');
 const validator = require('validator');
 const server = express();
 
@@ -16,76 +17,9 @@ mongoose.connect('mongodb://localhost:27017/deliveryApp', { useNewUrlParser: tru
     .then(() => console.log("Connected to MongoDB"))
     .catch(err => console.error("Could not connect to MongoDB", err));
 
-//Mongoose Schemas and Models
-const baseUserSchema = {
-    firstName: { type: String, required: true },
-    lastName: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    phone: { type: String, required: true },
-    role: { type: String, required: true, enum: ['customer', 'agent', 'admin'] },
-    createdAt: { type: Date, default: Date.now }
-};
-
-// Address Schema
-const addressSchema = new mongoose.Schema({
-    doorNo: { type: String, required: true },
-    street: { type: String, required: true },
-    area: { type: String, required: true },
-    city: { type: String, required: true },
-    state: { type: String, required: true },
-    pincode: { type: String, required: true }
-});
-
-// Customer Schema
-const customerSchema = new mongoose.Schema({
-    ...baseUserSchema,
-    address: { type: addressSchema, required: true },
-    orders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }]
-});
-
-// Agent Schema
-const agentSchema = new mongoose.Schema({
-    ...baseUserSchema,
-    address: { type: addressSchema, required: true },
-    available: { type: Boolean, default: true },
-    rating: { type: Number, default: 0 },
-    totalDeliveries: { type: Number, default: 0 },
-    currentOrder: { type: mongoose.Schema.Types.ObjectId, ref: 'Order' }
-});
-
-// Admin Schema (not exposed in public registration)
-const adminSchema = new mongoose.Schema({
-    ...baseUserSchema,
-    department: { type: String, required: true },
-    permissions: [{ type: String }]
-});
-
-// Hash password middleware for all schemas
-const hashPassword = async function (next) {
-    if (this.isModified('password')) {
-        this.password = await bcrypt.hash(this.password, BCRYPT_SALT_ROUNDS);
-    }
-    next();
-};
-
-customerSchema.pre('save', hashPassword);
-agentSchema.pre('save', hashPassword);
-adminSchema.pre('save', hashPassword);
-
-// Password verification method for all schemas
-const verifyPassword = async function (password) {
-    return await bcrypt.compare(password, this.password);
-};
-
-customerSchema.methods.verifyPassword = verifyPassword;
-agentSchema.methods.verifyPassword = verifyPassword;
-adminSchema.methods.verifyPassword = verifyPassword;
-
-// Models
-const Customer = mongoose.model('Customer', customerSchema);
-const Agent = mongoose.model('Agent', agentSchema);
-const Admin = mongoose.model('Admin', adminSchema);
+// Load models (schemas moved to server/models.js)
+const { Customer, Agent, Admin } = require('./models');
+const { sendResetEmail, isEnabled: isMailEnabled } = require('./mail');
 
 // Authentication Middleware
 const jwt = require('jsonwebtoken');
@@ -115,17 +49,101 @@ const auth = (roles = []) => {
 
 //Routes
 
+// Password reset: request token
+// Apply rate limiter to password endpoints to limit abuse
+const passwordLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: 'Too many password requests. Please try again later.' }
+});
+
+server.post('/api/password/forgot', passwordLimiter, async (req, res) => {
+    try {
+        const { email } = req.body || {};
+        if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
+
+        const [customerUser, agentUser, adminUser] = await Promise.all([
+            Customer.findOne({ email }),
+            Agent.findOne({ email }),
+            Admin.findOne({ email })
+        ]);
+        const user = customerUser || agentUser || adminUser;
+        if (!user) return res.status(200).json({ success: true, message: 'If that email is registered, a reset token has been sent.' });
+
+    // Generate a secure random token
+    const token = crypto.randomBytes(32).toString('hex');
+        const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+        // Save hashed token and expiry via model helper
+        await user.setResetToken(token, expiresAt);
+
+        // Try to send email; if configured do NOT return token in response
+        if (isMailEnabled()) {
+            try {
+                await sendResetEmail(email, token);
+                return res.json({ success: true, message: 'If that email is registered, a password reset email has been sent.' });
+            } catch (err) {
+                console.error('Error sending reset email:', err);
+                // fall through to return token for dev visibility
+            }
+        }
+
+        // Development fallback: log and return token so devs can complete the flow without email
+        console.log(`Password reset token for ${email}: ${token}`);
+        return res.json({ success: true, message: 'Password reset token generated (dev)', token });
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        res.status(500).json({ success: false, message: 'Error processing request', error: error.message });
+    }
+});
+
+// Password reset: submit new password with token
+server.post('/api/password/reset', passwordLimiter, async (req, res) => {
+    try {
+        const { email, token, password } = req.body || {};
+        if (!email || !token || !password) return res.status(400).json({ success: false, message: 'Email, token and new password are required' });
+
+        if (password.length < 8 || !/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
+            return res.status(400).json({ success: false, message: 'Password must be at least 8 characters and include both letters and numbers.' });
+        }
+
+        const [customerUser, agentUser, adminUser] = await Promise.all([
+            Customer.findOne({ email }),
+            Agent.findOne({ email }),
+            Admin.findOne({ email })
+        ]);
+        const user = customerUser || agentUser || adminUser;
+        if (!user) return res.status(400).json({ success: false, message: 'Invalid token or email' });
+
+        const valid = await user.verifyResetToken(token);
+        if (!valid) return res.status(400).json({ success: false, message: 'Invalid or expired token' });
+
+        // Update password and clear reset token fields
+        user.password = password;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+
+        return res.json({ success: true, message: 'Password has been reset' });
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({ success: false, message: 'Error resetting password', error: error.message });
+    }
+});
+
 // Register routes for different roles
 server.post('/api/register', async (req, res) => {
     try {
-        const { 
-            firstName, 
-            lastName, 
-            email, 
-            password, 
-            phone, 
-            role, 
-            address 
+        const {
+            firstName,
+            lastName,
+            email,
+            password,
+            phone,
+            role,
+            address
         } = req.body;
 
         // Basic server-side password strength validation
@@ -143,7 +161,7 @@ server.post('/api/register', async (req, res) => {
         }
 
         // Validate required address fields
-        if (!address || !address.doorNo || !address.street || !address.area || 
+        if (!address || !address.doorNo || !address.street || !address.area ||
             !address.city || !address.state || !address.pincode) {
             return res.status(400).json({
                 success: false,
@@ -390,71 +408,71 @@ server.post('/api/admin/bootstrap', async (req, res) => {
     }
 });
 
-    // Admin: list users (customers) with search and pagination
-    server.get('/api/admin/users', auth(['admin']), async (req, res) => {
-        try {
-            const q = (req.query.q || '').trim();
-            const page = parseInt(req.query.page) || 1;
-            const limit = Math.min(parseInt(req.query.limit) || 10, 100);
+// Admin: list users (customers) with search and pagination
+server.get('/api/admin/users', auth(['admin']), async (req, res) => {
+    try {
+        const q = (req.query.q || '').trim();
+        const page = parseInt(req.query.page) || 1;
+        const limit = Math.min(parseInt(req.query.limit) || 10, 100);
 
-            const filter = {};
-            if (q) {
-                const regex = new RegExp(q, 'i');
-                filter.$or = [
-                    { firstName: regex },
-                    { lastName: regex },
-                    { email: regex },
-                    { phone: regex }
-                ];
-            }
-
-            const total = await Customer.countDocuments(filter);
-            const items = await Customer.find(filter)
-                .skip((page - 1) * limit)
-                .limit(limit)
-                .sort({ createdAt: -1 })
-                .lean();
-
-            res.json({ success: true, data: { items, total, page, limit } });
-        } catch (error) {
-            console.error('Admin users list error:', error);
-            res.status(500).json({ success: false, message: 'Error fetching users', error: error.message });
+        const filter = {};
+        if (q) {
+            const regex = new RegExp(q, 'i');
+            filter.$or = [
+                { firstName: regex },
+                { lastName: regex },
+                { email: regex },
+                { phone: regex }
+            ];
         }
-    });
 
-    // Admin: list agents with search and pagination
-    server.get('/api/admin/agents', auth(['admin']), async (req, res) => {
-        try {
-            const q = (req.query.q || '').trim();
-            const page = parseInt(req.query.page) || 1;
-            const limit = Math.min(parseInt(req.query.limit) || 10, 100);
+        const total = await Customer.countDocuments(filter);
+        const items = await Customer.find(filter)
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .sort({ createdAt: -1 })
+            .lean();
 
-            const filter = {};
-            if (q) {
-                const regex = new RegExp(q, 'i');
-                filter.$or = [
-                    { firstName: regex },
-                    { lastName: regex },
-                    { email: regex },
-                    { phone: regex }
-                ];
-            }
+        res.json({ success: true, data: { items, total, page, limit } });
+    } catch (error) {
+        console.error('Admin users list error:', error);
+        res.status(500).json({ success: false, message: 'Error fetching users', error: error.message });
+    }
+});
 
-            const total = await Agent.countDocuments(filter);
-            const items = await Agent.find(filter)
-                .skip((page - 1) * limit)
-                .limit(limit)
-                .sort({ createdAt: -1 })
-                .lean();
+// Admin: list agents with search and pagination
+server.get('/api/admin/agents', auth(['admin']), async (req, res) => {
+    try {
+        const q = (req.query.q || '').trim();
+        const page = parseInt(req.query.page) || 1;
+        const limit = Math.min(parseInt(req.query.limit) || 10, 100);
 
-            res.json({ success: true, data: { items, total, page, limit } });
-        } catch (error) {
-            console.error('Admin agents list error:', error);
-            res.status(500).json({ success: false, message: 'Error fetching agents', error: error.message });
+        const filter = {};
+        if (q) {
+            const regex = new RegExp(q, 'i');
+            filter.$or = [
+                { firstName: regex },
+                { lastName: regex },
+                { email: regex },
+                { phone: regex }
+            ];
         }
-    });
 
-    // Debug route removed. Do not add endpoints that expose hashed passwords in production.
+        const total = await Agent.countDocuments(filter);
+        const items = await Agent.find(filter)
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .sort({ createdAt: -1 })
+            .lean();
+
+        res.json({ success: true, data: { items, total, page, limit } });
+    } catch (error) {
+        console.error('Admin agents list error:', error);
+        res.status(500).json({ success: false, message: 'Error fetching agents', error: error.message });
+    }
+});
+
+// Debug route removed. Do not add endpoints that expose hashed passwords in production.
 
 const port = 3000;
 server.listen(port, () => {
