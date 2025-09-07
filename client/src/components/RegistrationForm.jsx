@@ -164,8 +164,8 @@ const RegistrationForm = () => {
         <Box component="form" onSubmit={formik.handleSubmit} className="form">
           <Grid container spacing={2} className="contaier">
             <Grid xs={12} width={"100%"}>
-              <fieldset className="fieldset">
-                <legend className="legend">Personal Details</legend>
+              <Box className="section" sx={{ mb: 2, p: 2, borderRadius: 1, bgcolor: 'background.paper' }}>
+                <Typography variant="h6" component="h2" sx={{ mb: 1 }}>Personal details</Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={6} className="column">
                     <TextField
@@ -232,11 +232,11 @@ const RegistrationForm = () => {
                     />
                   </Grid>
                 </Grid>
-              </fieldset>
+              </Box>
             </Grid>
             <Grid xs={12} width={"100%"}>
-              <fieldset className="fieldset">
-                <legend className="legend">Security Details</legend>
+              <Box className="section" sx={{ mb: 2, p: 2, borderRadius: 1, bgcolor: 'background.paper' }}>
+                <Typography variant="h6" component="h2" sx={{ mb: 1 }}>Security</Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={6} className="column">
                     <TextField
@@ -276,11 +276,11 @@ const RegistrationForm = () => {
                     />
                   </Grid>
                 </Grid>
-              </fieldset>
+              </Box>
             </Grid>
             <Grid xs={12} width={"100%"}>
-              <fieldset className="fieldset">
-                <legend className="legend">Address Details</legend>
+              <Box className="section" sx={{ mb: 2, p: 2, borderRadius: 1, bgcolor: 'background.paper' }}>
+                <Typography variant="h6" component="h2" sx={{ mb: 1 }}>Address</Typography>
                 <Grid container spacing={2}>
                   {/* First Row */}
                   <Grid item xs={6}>
@@ -368,7 +368,7 @@ const RegistrationForm = () => {
                     />
                   </Grid>
                 </Grid>
-              </fieldset>
+              </Box>
             </Grid>
             <Grid container spacing={2} className="">
               <Grid item xs={6} className="column">
